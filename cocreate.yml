@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cocreate
+  name: cocreate
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cocreate
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: cocreate
+    spec:
+      containers:
+      - image: frankpagan/cocreatews:latest
+        imagePullPolicy: Always
+        name: cocreate
+        ports:
+        - containerPort: 8081
+          name: app
+          protocol: TCP
+      - image: frankpagan/cocreatecrdt:latest
+        name: cocreatecrdt
+        env:
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: cocreate-crdt-conf
+              key: PORT
+      imagePullSecrets:
+      - name: cocreate
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cocreate
+  namespace: default
+spec:
+  ports:
+  - name: app
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    app: cocreate
+    
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cocreate-crdt
+  namespace: default
+spec:
+  ports:
+  - name: crdt
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: cocreate
+    
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
+  name: cocreate
+  namespace: default
+spec:
+  rules:
+  - host: "*.cocreate.app"
+    http:
+      paths:
+      - backend:
+          serviceName: cocreate-crdt
+          servicePort: 8080
+        path: /crdt
+      - backend:
+          serviceName: cocreate
+          servicePort: 8081
+        path: /
+  tls:
+  - hosts:
+    - "*.cocreate.app"
+    secretName: cocreatewildcard
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cocreate-crdt-conf
+data:
+  PORT: "8080"
