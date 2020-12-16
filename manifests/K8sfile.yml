@@ -65,9 +65,9 @@ metadata:
 spec:
   ports:
   - name: crdt
-    port: 8080
+    port: 3000
     protocol: TCP
-    targetPort: 8080
+    targetPort: 3000
   selector:
     app: cocreate
     
@@ -91,7 +91,7 @@ spec:
       paths:
       - backend:
           serviceName: cocreate-crdt
-          servicePort: 8080
+          servicePort: 3000
         path: /crdt
       - backend:
           serviceName: cocreate
@@ -107,4 +107,4 @@ kind: ConfigMap
 metadata:
   name: cocreate-crdt-conf
 data:
-  PORT: "8080"
+  PORT: "3000"
