@@ -100,7 +100,7 @@ spec:
   tls:
   - hosts:
     - "*.cocreate.app"
-    secretName: cocreatewildcard
+    secretName: cocreate-app
 ---
 apiVersion: v1
 kind: ConfigMap
