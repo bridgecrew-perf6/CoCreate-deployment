@@ -6,7 +6,7 @@ metadata:
   name: cocreate
   namespace: default
 spec:
-  replicas: 6
+  replicas: 10
   selector:
     matchLabels:
       app: cocreate
