@@ -55,7 +55,7 @@ spec:
     app: cocreate
     
   sessionAffinity: None
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: Service
@@ -72,7 +72,7 @@ spec:
     app: cocreate
     
   sessionAffinity: None
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
