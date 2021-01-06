@@ -107,4 +107,4 @@ kind: ConfigMap
 metadata:
   name: cocreate-crdt-conf
 data:
-  PORT: "3000" 
+  PORT: "3000"
