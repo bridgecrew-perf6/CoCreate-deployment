@@ -21,23 +21,23 @@ spec:
         app: cocreate
     spec:
       containers:
-      - image: frankpagan/cocreatews:latest
-        imagePullPolicy: Always
-        name: cocreate
-        ports:
-        - containerPort: 8081
-          name: app
-          protocol: TCP
-      - image: frankpagan/cocreatecrdt:latest
-        name: cocreatecrdt
-        env:
-        - name: PORT
-          valueFrom:
-            configMapKeyRef:
-              name: cocreate-crdt-conf
-              key: PORT
+        - image: frankpagan/cocreatews:latest
+          imagePullPolicy: Always
+          name: cocreate
+          ports:
+            - containerPort: 8081
+              name: app
+              protocol: TCP
+        - image: frankpagan/cocreatecrdt:latest
+          name: cocreatecrdt
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: cocreate-crdt-conf
+                  key: PORT
       imagePullSecrets:
-      - name: cocreate
+        - name: docker
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -47,13 +47,13 @@ metadata:
   namespace: default
 spec:
   ports:
-  - name: app
-    port: 8081
-    protocol: TCP
-    targetPort: 8081
+    - name: app
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
   selector:
     app: cocreate
-    
+
   sessionAffinity: None
   type: ClusterIP
 ---
@@ -64,13 +64,13 @@ metadata:
   namespace: default
 spec:
   ports:
-  - name: crdt
-    port: 3000
-    protocol: TCP
-    targetPort: 3000
+    - name: crdt
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
   selector:
     app: cocreate
-    
+
   sessionAffinity: None
   type: ClusterIP
 ---
@@ -86,21 +86,21 @@ metadata:
   namespace: default
 spec:
   rules:
-  - host: "*.cocreate.app"
-    http:
-      paths:
-      - backend:
-          serviceName: cocreate-crdt
-          servicePort: 3000
-        path: /crdt
-      - backend:
-          serviceName: cocreate
-          servicePort: 8081
-        path: /
+    - host: "*.cocreate.app"
+      http:
+        paths:
+          - backend:
+              serviceName: cocreate-crdt
+              servicePort: 3000
+            path: /crdt
+          - backend:
+              serviceName: cocreate
+              servicePort: 8081
+            path: /
   tls:
-  - hosts:
-    - "*.cocreate.app"
-    secretName: cocreate-app
+    - hosts:
+        - "*.cocreate.app"
+      secretName: cocreate-app
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -108,4 +108,3 @@ metadata:
   name: cocreate-crdt-conf
 data:
   PORT: "3000"
-  
