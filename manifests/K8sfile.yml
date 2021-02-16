@@ -21,7 +21,7 @@ spec:
         app: cocreate
     spec:
       containers:
-        - image: frankpagan/cocreatews:latest
+        - image: frankpagan/cocreatews@sha256:76b5c3109e7f1c1d366b10543edef16ef269bc77faeebe2e6b6783d8408248f7
           imagePullPolicy: Always
           name: cocreate
           ports:
