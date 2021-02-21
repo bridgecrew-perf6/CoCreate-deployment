@@ -2,109 +2,26 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    app: cocreate
-  name: cocreate
-  namespace: default
+    run: haproxy
+  name: haproxy
 spec:
-  # replicas: 3
   selector:
     matchLabels:
-      app: cocreate
-  # strategy:
-  #   rollingUpdate:
-  #     maxSurge: 25%
-  #     maxUnavailable: 25%
-  #   type: RollingUpdate
+      run: haproxy
   template:
     metadata:
       labels:
-        app: cocreate
+        run: haproxy
     spec:
       containers:
-        - image: frankpagan/cocreatews@sha256:76b5c3109e7f1c1d366b10543edef16ef269bc77faeebe2e6b6783d8408248f7
-          imagePullPolicy: Always
-          name: cocreate
+        - name: haproxy
+          image: haproxytech/haproxy-alpine
           ports:
-            - containerPort: 8081
-              name: app
-              protocol: TCP
-        - image: frankpagan/cocreatecrdt:latest
-          name: cocreatecrdt
-          env:
-            - name: PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: cocreate-crdt-conf
-                  key: PORT
-      imagePullSecrets:
-        - name: docker
-      restartPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: cocreate
-  namespace: default
-spec:
-  ports:
-    - name: app
-      port: 8081
-      protocol: TCP
-      targetPort: 8081
-  selector:
-    app: cocreate
-
-  sessionAffinity: None
-  type: ClusterIP
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: cocreate-crdt
-  namespace: default
-spec:
-  ports:
-    - name: crdt
-      port: 3000
-      protocol: TCP
-      targetPort: 3000
-  selector:
-    app: cocreate
-
-  sessionAffinity: None
-  type: ClusterIP
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/affinity: "cookie"
-    nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
-  name: cocreate
-  namespace: default
-spec:
-  rules:
-    - host: "*.cocreate.app"
-      http:
-        paths:
-          - backend:
-              serviceName: cocreate-crdt
-              servicePort: 3000
-            path: /crdt
-          - backend:
-              serviceName: cocreate
-              servicePort: 8081
-            path: /
-  tls:
-    - hosts:
-        - "*.cocreate.app"
-      secretName: cocreate-app
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: cocreate-crdt-conf
-data:
-  PORT: "3000"
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
+            - name: stat
+              containerPort: 1936
+      nodeSelector:
+        nodeType: loadbalancer
